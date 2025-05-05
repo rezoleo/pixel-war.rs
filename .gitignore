@@ -1,0 +1,36 @@
+### Axum backend
+
+backend/target/
+backend/static/
+
+### Next Frontend
+
+# dependencies
+frontend/node_modules/
+
+# typescript
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+
+# Frontend build
+frontend/.DS_Store
+frontend/node_modules/
+
+# React Router
+frontend/.react-router/
+frontend/build/
+
+# debug
+frontend/.pnpm-debug.log*
+
+# testing
+frontend/coverage
+
+# production
+frontend/dist/
+
+# zip files in media. They have the same name and content as the folder
+frontend/media/*.zip
+
+# environment variables
+frontend/.env*
