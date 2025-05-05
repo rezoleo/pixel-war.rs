@@ -13,7 +13,7 @@ const links = [
 const Navbar: React.FC = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
-      <div className="container-fluid">
+      <div className="container-xxl">
         <Link className="navbar-brand" to={links[0].href}>
           <img src='/logo_rezoleo.svg' alt="Logo" width={50} height={50} />
         </Link>

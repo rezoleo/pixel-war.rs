@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-function HomeContent() {
+export default function Home() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -18,13 +18,9 @@ function HomeContent() {
   }, []);
 
   return (
-    <div>
+    <div className="container-xxl">
       <h1>Message from Backend:</h1>
       <h1>{message || "Loading..."}</h1>
     </div>
   );
-}
-
-export default function Home() {
-  return <HomeContent />;
 }
