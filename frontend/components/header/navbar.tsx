@@ -12,17 +12,16 @@ const links = [
 
 const Navbar: React.FC = () => {
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light">
-      <div className="container-xxl">
-        <Link className="navbar-brand" to={links[0].href}>
-          <img src='/logo_rezoleo.svg' alt="Logo" width={50} height={50} />
+    <nav className="bg-linear-to-r from-rose-900 to-red-950 text-white shadow-md">
+      <div className="container mx-auto flex">
+        <Link className="mr-10 items-center py-5" to={links[0].href}>
+          <img src="/logo_rezoleo_blanc.svg" alt="Logo" className="w-18 h-18" />
         </Link>
 
-        {/* Add a button to toggle the navbar on small screens */}
+        {/* Burger menu for mobile */}
         <BurgerMenu navbarId="navbarNav" />
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <NavbarLinks links={links} />
-        </div>
+
+        <NavbarLinks links={links} />
       </div>
     </nav>
   );

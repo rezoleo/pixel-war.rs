@@ -7,9 +7,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import BootstrapClient from "components/boostrapClient";
 import Header from "components/header/header";
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -38,7 +36,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {children}
       <ScrollRestoration />
       <Scripts />
-      <BootstrapClient />
     </>
   );
 }
