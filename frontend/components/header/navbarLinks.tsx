@@ -14,12 +14,12 @@ interface NavbarLinksProps {
 const NavbarLinks: React.FC<NavbarLinksProps> = ({ links }) => {
   const location = useLocation();
   return (
-    <ul className="flex items-end space-x-6 pb-5">
+    <ul className="flex items-end space-x-6">
       {links.map((link) => (
         <li key={link.href}>
           <Link
             to={link.href}
-            className={clsx("text-white text-lg hover:text-gray-500", {
+            className={clsx("text-white text-sm sm:text-lg hover:text-gray-500", {
               "font-bold border-b-2 border-white":
                 location.pathname === link.href,
             })}

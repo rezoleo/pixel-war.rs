@@ -3,3 +3,20 @@
 body {
   background-color: oklch(20.5% 0 0);
 }
+
+.color-buttons:hover::after,
+.color-buttons:focus-visible::after {
+  content: attr(title);
+  position: absolute;
+  top: -2rem; /* Adjust as needed */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: oklch(29.3% 0.066 243.157);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 1rem;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+}

@@ -1,5 +1,6 @@
 import {
   isRouteErrorResponse,
+  Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
@@ -25,13 +26,17 @@ export const links: Route.LinksFunction = () => [
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
+    { name: "description", content: "Bienvenue dans la PixelWar!" },
+    { name: "viewport", content: "width=device-width,initial-scale=1" },];
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
+      <head>
+        <Meta />
+      </head>
+
       <Header />
       {children}
       <ScrollRestoration />
