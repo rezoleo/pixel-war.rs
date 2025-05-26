@@ -1,13 +1,14 @@
-const PIXEL_PER_UNIT = 10;
+export const PIXEL_PER_UNIT = 10;
+
 export interface CanvasSize {
   width: number;
   height: number;
 }
 
 interface CanvasPixelWarProps {
-  scale: number | undefined;
   width: number  | undefined;
   height: number | undefined;
+  scale: number | null;
 }
 
 const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({width, height, scale}) => {

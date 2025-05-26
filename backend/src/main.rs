@@ -41,8 +41,8 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     let canvas_size = Arc::new(CanvasSize {
-        width: 60,
-        height: 60,
+        width: 80,
+        height: 80,
     });
 
     // Define CORS layer
