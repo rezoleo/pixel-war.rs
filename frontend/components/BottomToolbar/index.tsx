@@ -27,8 +27,8 @@ const BottomToolbar: React.FC<BottomToolbarProps> = ({
   onUpload,
 }) => {
   return (
-    <div className="fixed bottom-0 left-0 w-full flex justify-center py-2 z-50">
-      <div className="inline-flex items-center">
+    <div className="sticky bottom-0 left-0 w-full py-2 z-50">
+      <div className="flex flex-wrap justify-center items-center gap-2 px-4">
         <Slider
           min={minSliderValue}
           max={maxSliderValue}
@@ -40,22 +40,29 @@ const BottomToolbar: React.FC<BottomToolbarProps> = ({
             )
           }
         />
-        {colors.map((color, index) => (
-          <ColorButton
-            key={index}
-            color={color}
-            className="mx-1"
-            selected={selectedColor === color}
-            onClick={onColorSelect}
-          />
-        ))}
-        <Button onClick={onRefresh} className="mx-4">
-          Refresh
-        </Button>
-        <Button onClick={onUpload}>Upload</Button>
+        <div className="flex flex-wrap justify-center gap-1">
+          {colors.map((color, index) => (
+            <ColorButton
+              key={index}
+              color={color}
+              className="w-8 h-8 sm:w-10 sm:h-10"
+              selected={selectedColor === color}
+              onClick={onColorSelect}
+            />
+          ))}
+        </div>
+        <div className="flex gap-2 mt-2 sm:mt-0">
+          <Button onClick={onRefresh} className="px-2 sm:px-4 py-1 sm:py-2 text-sm sm:text-base">
+            Refresh
+          </Button>
+          <Button onClick={onUpload} className="px-2 sm:px-4 py-1 sm:py-2 text-sm sm:text-base">
+            Upload
+          </Button>
+        </div>
       </div>
     </div>
   );
 };
+
 
 export default BottomToolbar;

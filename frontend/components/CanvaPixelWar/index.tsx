@@ -6,26 +6,37 @@ export interface CanvasSize {
 }
 
 interface CanvasPixelWarProps {
-  width: number  | undefined;
+  width: number | undefined;
   height: number | undefined;
   scale: number | null;
 }
 
-const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({width, height, scale}) => {
+const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
+  width,
+  height,
+  scale,
+}) => {
+  if (!width || !height || !scale) return null;
+
+  const canvasWidth = width * PIXEL_PER_UNIT;
+  const canvasHeight = height * PIXEL_PER_UNIT;
 
   return (
-    width && height && scale? (
-      <canvas 
+    <div
+      style={{
+        width: canvasWidth,
+        height: canvasHeight,
+        transform: `scale(${scale})`,
+        transformOrigin: "top center",
+      }}
+    >
+      <canvas
         id="canvas"
-        className="bg-neutral-600"
-        width={width * PIXEL_PER_UNIT}
-        height={height * PIXEL_PER_UNIT}
-        style={{transform: `scale(${scale})`, transformOrigin: "center top 0px"}}
-      >
-      </canvas>
-    ) : (
-      <></>
-    )
+        className="bg-neutral-600 block"
+        width={canvasWidth}
+        height={canvasHeight}
+      />
+    </div>
   );
 };
 

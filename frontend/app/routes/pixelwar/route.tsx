@@ -56,7 +56,7 @@ export default function Home() {
             <p>{`x${sliderValue !== null ? sliderValue.toFixed(2) : ""}`}</p>
           </div>
         </div>
-        <div className="justify-center flex my-5">
+        <div className="w-full flex justify-center overflow-hidden my-5">
           <CanvaPixelWar
             width={canvasSize?.height}
             height={canvasSize?.height}
