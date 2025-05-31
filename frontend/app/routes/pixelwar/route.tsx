@@ -47,7 +47,7 @@ export default function Home() {
   }, []);
 
   return (
-    <>
+    <div className="flex flex-col">
       <div className="pt-5 px-3 container mx-auto dark:text-white text-lg">
         <div className="flex justify-center">
           <div className="inline-flex bg-neutral-600 py-1 px-2 rounded-lg">
@@ -56,14 +56,12 @@ export default function Home() {
             <p>{`x${sliderValue !== null ? sliderValue.toFixed(2) : ""}`}</p>
           </div>
         </div>
-        <div className="w-full flex justify-center overflow-hidden my-5">
-          <CanvaPixelWar
-            width={canvasSize?.height}
-            height={canvasSize?.height}
-            scale={sliderValue}
-          />
-        </div>
       </div>
+      <CanvaPixelWar
+        width={canvasSize?.height}
+        height={canvasSize?.height}
+        scale={sliderValue}
+      />
       <BottomToolbar
         sliderValue={sliderValue}
         minSliderValue={minSliderValue}
@@ -75,6 +73,6 @@ export default function Home() {
         onRefresh={() => {}}
         onUpload={() => {}}
       />
-    </>
+    </div>
   );
 }

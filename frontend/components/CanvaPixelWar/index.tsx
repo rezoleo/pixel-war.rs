@@ -66,32 +66,30 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
 
   return (
     <div
-      className="w-full h-full overflow-hidden flex justify-center items-start"
+      className="w-full h-full overflow-hidden flex justify-center items-start mt-3"
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       style={{
-        cursor: dragStarted ? "grabbing" : "default", // 👈 Only show if dragging started
+        cursor: dragStarted ? "grabbing" : "default",
         userSelect: "none",
+        transform: "scale(${scale})",
       }}
     >
-      <div
+      <canvas
+        ref={canvasRef}
+        id="canvas"
+        width={canvasWidth}
+        height={canvasHeight}
+        className="bg-neutral-600 block"
         style={{
-          width: canvasWidth,
-          height: canvasHeight,
-          transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
-          transformOrigin: "center",
+          width: canvasWidth * scale,
+          height: canvasHeight * scale,
+          transform: `translate(${translate.x}px, ${translate.y}px)`,
+          imageRendering: "pixelated",
         }}
-      >
-        <canvas
-          ref={canvasRef}
-          id="canvas"
-          width={canvasWidth}
-          height={canvasHeight}
-          className="bg-neutral-600 block"
-        />
-      </div>
+      />
     </div>
   );
 };

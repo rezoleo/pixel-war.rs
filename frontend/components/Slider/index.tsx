@@ -27,7 +27,7 @@ const Slider: React.FC<SliderProps> = ({ min, max, step, value, onChange }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center mr-4">
+    <div className="hidden md:flex flex-col items-center justify-center mr-4">
       <label className="mb-1 font-bold text-lg text-white">Zoom</label>
       <input
         type="range"

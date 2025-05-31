@@ -27,7 +27,7 @@ const BottomToolbar: React.FC<BottomToolbarProps> = ({
   onUpload,
 }) => {
   return (
-    <div className="sticky bottom-0 left-0 w-full py-2 z-50">
+    <div className="fixed bottom-0 left-0 w-full py-2 z-50">
       <div className="flex flex-wrap justify-center items-center gap-2 px-4">
         <Slider
           min={minSliderValue}
@@ -52,10 +52,16 @@ const BottomToolbar: React.FC<BottomToolbarProps> = ({
           ))}
         </div>
         <div className="flex gap-2 mt-2 sm:mt-0">
-          <Button onClick={onRefresh} className="px-2 sm:px-4 py-1 sm:py-2 text-sm sm:text-base">
+          <Button
+            onClick={onRefresh}
+            className="px-2 sm:px-4 py-1 sm:py-2 text-sm sm:text-base"
+          >
             Refresh
           </Button>
-          <Button onClick={onUpload} className="px-2 sm:px-4 py-1 sm:py-2 text-sm sm:text-base">
+          <Button
+            onClick={onUpload}
+            className="px-2 sm:px-4 py-1 sm:py-2 text-sm sm:text-base"
+          >
             Upload
           </Button>
         </div>
@@ -63,6 +69,5 @@ const BottomToolbar: React.FC<BottomToolbarProps> = ({
     </div>
   );
 };
-
 
 export default BottomToolbar;

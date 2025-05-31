@@ -56,7 +56,7 @@ const ColorButton: React.FC<ColorButtonProps> = ({
     <button
       onClick={() => onClick(color)}
       style={{ backgroundColor: color }}
-      className={`w-10 h-10 relative border-2 color-buttons hover:cursor-pointer ${className} ${
+      className={`relative border-2 color-buttons hover:cursor-pointer ${className} ${
         selected ? "border-4 border-rose-700" : "border-neutral-400"
       }`}
       title={colorNamesFr[color] || "Couleur non définie"}
