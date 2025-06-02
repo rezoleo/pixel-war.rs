@@ -1,10 +1,20 @@
-use axum::{Router, extract::State, routing::get, response::{Json, Html, IntoResponse}};
+use axum::{
+    Router,
+    extract::State,
+    response::{Html, IntoResponse, Json},
+    routing::{get, post},
+};
 use serde::Serialize;
-use tower_http::cors::{Any, CorsLayer}; // Import CorsLayer
-use tracing_subscriber;
-use tower_http::services::ServeDir;
 use std::fs;
 use std::sync::Arc;
+use tower_http::cors::{Any, CorsLayer}; // Import CorsLayer
+use tower_http::services::ServeDir;
+use tracing_subscriber;
+
+const COLORS: [&str; 16] = [
+    "#FFFFFF", "#E4E4E4", "#888888", "#222222", "#FFA7D1", "#E50000", "#E59500", "#A06A42",
+    "#E5D900", "#94E044", "#02BE01", "#00D3DD", "#0083C7", "#0000EA", "#CD6EEA", "#820080",
+];
 
 const ADDRESS: &str = "127.0.0.1:3000";
 
@@ -14,15 +24,35 @@ struct CanvasSize {
     height: u32,
 }
 
-#[derive(Serialize)]
-struct Message {
-    message: String,
+#[derive(serde::Deserialize)]
+struct PixelRequest {
+    x: u32,
+    y: u32,
+    color: String,
 }
 
-async fn hello_world() -> Json<Message> {
-    Json(Message {
-        message: "Hello from Rust backend!".to_string(),
-    })
+async fn handle_pixel_request(
+    State(size): State<Arc<CanvasSize>>,
+    Json(request): Json<PixelRequest>,
+) -> impl IntoResponse {
+    if request.x < size.width && request.y < size.height && COLORS.contains(&request.color.as_str())
+    {
+        // Here you would handle the pixel update logic
+        tracing::info!(
+            "Received pixel update at ({}, {}) with color {}",
+            request.x,
+            request.y,
+            request.color
+        );
+        Json("Pixel updated successfully")
+    } else {
+        tracing::warn!(
+            "Received pixel update out of bounds: ({}, {})",
+            request.x,
+            request.y
+        );
+        Json("Pixel update out of bounds")
+    }
 }
 
 async fn get_canvas_size(State(size): State<Arc<CanvasSize>>) -> Json<CanvasSize> {
@@ -46,14 +76,12 @@ async fn main() {
     });
 
     // Define CORS layer
-    let cors = CorsLayer::new()
-        .allow_origin(Any)
-        .allow_methods(Any);
+    let cors = CorsLayer::new().allow_origin(Any).allow_methods(Any);
 
     // Build our application with a route and CORS middleware
     let app = Router::new()
-        .route("/api/hello", get(hello_world))
         .route("/api/size", get(get_canvas_size))
+        .route("/api/pixel", post(handle_pixel_request))
         .fallback_service(ServeDir::new("./frontend/dist").not_found_service(get(spa_fallback)))
         .with_state(canvas_size)
         .layer(cors);
@@ -66,7 +94,5 @@ async fn main() {
     tracing::info!("Listening on http://{}", ADDRESS);
 
     // Serve the application
-    axum::serve(listener, app)
-        .await
-        .expect("Server error");
+    axum::serve(listener, app).await.expect("Server error");
 }

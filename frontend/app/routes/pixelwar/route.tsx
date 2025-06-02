@@ -16,6 +16,10 @@ export default function Home() {
   const [minSliderValue, setMinSliderValue] = useState<number | null>(null);
   const [maxSliderValue, setMaxSliderValue] = useState<number | null>(null);
   const [canvasSize, setCanvasSize] = useState<CanvasSize | null>(null);
+  const [pixelClicked, setPixelClicked] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   useEffect(() => {
     axios
@@ -52,7 +56,9 @@ export default function Home() {
         <div className="flex justify-center">
           <div className="inline-flex bg-neutral-600 py-1 px-2 rounded-lg">
             <p className="pr-1 font-bold">Timer</p>
-            <p className="pr-3 font-bold">(?,?)</p>
+            <p className="pr-3 font-bold">
+              {pixelClicked ? `(${pixelClicked.x},${pixelClicked.y})` : "(?,?)"}
+            </p>
             <p>{`x${sliderValue !== null ? sliderValue.toFixed(2) : ""}`}</p>
           </div>
         </div>
@@ -61,6 +67,8 @@ export default function Home() {
         width={canvasSize?.height}
         height={canvasSize?.height}
         scale={sliderValue}
+        currentColor={selectedColor}
+        setPixelClicked={setPixelClicked}
       />
       <BottomToolbar
         sliderValue={sliderValue}

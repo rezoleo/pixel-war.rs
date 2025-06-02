@@ -37,6 +37,10 @@ export const colorNamesFr: Record<(typeof colors)[number], string> = {
   "#820080": "Violet",
 };
 
+export const isValidColor = (hex: string): hex is Color => {
+  return colors.includes(hex as Color);
+};
+
 export type Color = (typeof colors)[number];
 
 type ColorButtonProps = {

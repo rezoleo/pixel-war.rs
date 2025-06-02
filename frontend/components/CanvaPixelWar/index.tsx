@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+import { isValidColor, type Color } from "components/Button/Color";
+import { useEffect, useRef, useState } from "react";
 
 export const PIXEL_PER_UNIT = 10;
 
@@ -11,19 +12,49 @@ interface CanvasPixelWarProps {
   width: number | undefined;
   height: number | undefined;
   scale: number | null;
+  currentColor: Color;
+  setPixelClicked: React.Dispatch<
+    React.SetStateAction<{
+      x: number;
+      y: number;
+    } | null>
+  >;
 }
+
+const rgbToHex = (r: number, g: number, b: number): string =>
+  "#" +
+  [r, g, b]
+    .map((x) => x.toString(16).padStart(2, "0"))
+    .join("")
+    .toUpperCase();
 
 const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
   width,
   height,
   scale,
+  currentColor,
+  setPixelClicked,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
   const [isDragging, setIsDragging] = useState(false);
   const [dragStarted, setDragStarted] = useState(false); // ← distinguishes click vs drag
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
+  const previousPixel = useRef<{
+    x: number;
+    y: number;
+    color: Color;
+  } | null>(null);
   const dragStart = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current || !width || !height) return;
+    const ctx = canvasRef.current.getContext("2d");
+    if (!ctx) return;
+
+    // Fill canvas with white grid
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width * PIXEL_PER_UNIT, height * PIXEL_PER_UNIT);
+  }, [width, height]);
 
   if (!width || !height || !scale) return null;
 
@@ -32,11 +63,64 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
-    setDragStarted(false); // reset on new press
+    setDragStarted(false);
     dragStart.current = {
       x: e.clientX - translate.x,
       y: e.clientY - translate.y,
     };
+
+    const rect = canvasRef.current?.getBoundingClientRect();
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!rect || !ctx) return;
+
+    const x = (e.clientX - rect.left) / scale;
+    const y = (e.clientY - rect.top) / scale;
+
+    const pixelX = Math.floor(x / PIXEL_PER_UNIT);
+    const pixelY = Math.floor(y / PIXEL_PER_UNIT);
+
+    const imageData = ctx.getImageData(
+      pixelX * PIXEL_PER_UNIT,
+      pixelY * PIXEL_PER_UNIT,
+      1,
+      1
+    ).data;
+
+    const hexColor = rgbToHex(imageData[0], imageData[1], imageData[2]);
+
+    if (pixelX >= 0 && pixelX < width && pixelY >= 0 && pixelY < height) {
+      // Restore previous pixel
+      if (previousPixel.current) {
+        const { x, y, color } = previousPixel.current;
+        ctx.fillStyle = color;
+        ctx.fillRect(
+          x * PIXEL_PER_UNIT,
+          y * PIXEL_PER_UNIT,
+          PIXEL_PER_UNIT,
+          PIXEL_PER_UNIT
+        );
+      }
+
+      // Draw new color
+      ctx.fillStyle = currentColor;
+      ctx.fillRect(
+        pixelX * PIXEL_PER_UNIT,
+        pixelY * PIXEL_PER_UNIT,
+        PIXEL_PER_UNIT,
+        PIXEL_PER_UNIT
+      );
+
+      // Only save hexColor if it's a valid `Color`
+      if (isValidColor(hexColor)) {
+        previousPixel.current = {
+          x: pixelX,
+          y: pixelY,
+          color: hexColor,
+        };
+      }
+
+      setPixelClicked({ x: pixelX, y: pixelY });
+    }
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -74,7 +158,6 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
       style={{
         cursor: dragStarted ? "grabbing" : "default",
         userSelect: "none",
-        transform: "scale(${scale})",
       }}
     >
       <canvas
@@ -82,7 +165,7 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
         id="canvas"
         width={canvasWidth}
         height={canvasHeight}
-        className="bg-neutral-600 block"
+        className="block"
         style={{
           width: canvasWidth * scale,
           height: canvasHeight * scale,
