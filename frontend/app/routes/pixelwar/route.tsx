@@ -21,6 +21,19 @@ export default function Home() {
     y: number;
   } | null>(null);
 
+  const handleUpload = async () => {
+    if (!pixelClicked) return;
+    try {
+      await axios.post("/api/pixel", {
+        x: pixelClicked.x,
+        y: pixelClicked.y,
+        color: selectedColor,
+      });
+    } catch (error) {
+      console.error("Error uploading pixel:", error);
+    }
+  };
+
   useEffect(() => {
     axios
       .get("/api/size")
@@ -79,7 +92,7 @@ export default function Home() {
         onColorSelect={setSelectedColor}
         onSliderChange={setSliderValue}
         onRefresh={() => {}}
-        onUpload={() => {}}
+        onUpload={handleUpload}
       />
     </div>
   );

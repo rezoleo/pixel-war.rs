@@ -54,13 +54,13 @@ const BottomToolbar: React.FC<BottomToolbarProps> = ({
         <div className="flex gap-2 mt-2 sm:mt-0">
           <Button
             onClick={onRefresh}
-            className="px-2 sm:px-4 py-1 sm:py-2 text-sm sm:text-base"
+            className="sm:px-4 sm:py-2 text-sm sm:text-base"
           >
             Refresh
           </Button>
           <Button
             onClick={onUpload}
-            className="px-2 sm:px-4 py-1 sm:py-2 text-sm sm:text-base"
+            className="sm:px-4 sm:py-2 text-sm sm:text-base"
           >
             Upload
           </Button>

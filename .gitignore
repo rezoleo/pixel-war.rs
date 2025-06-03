@@ -34,3 +34,5 @@ frontend/media/*.zip
 
 # environment variables
 frontend/.env*
+
+backend/state/pixels.bin
