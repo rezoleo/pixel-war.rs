@@ -88,6 +88,15 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
 
     const hexColor = rgbToHex(imageData[0], imageData[1], imageData[2]);
 
+    // Only update pixel if it's different from the previous one
+    if (
+      pixelX === previousPixel.current?.x &&
+      pixelY === previousPixel.current?.y
+    ) {
+      return;
+    }
+
+    // Check if pixel is within bounds
     if (pixelX >= 0 && pixelX < width && pixelY >= 0 && pixelY < height) {
       // Restore previous pixel
       if (previousPixel.current) {
