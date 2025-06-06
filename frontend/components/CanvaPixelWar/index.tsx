@@ -98,7 +98,7 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
 
     // Check if pixel is within bounds
     if (pixelX >= 0 && pixelX < width && pixelY >= 0 && pixelY < height) {
-      // Restore previous pixel
+      // Restore previous pixel (full square, no border)
       if (previousPixel.current) {
         const { x, y, color } = previousPixel.current;
         ctx.fillStyle = color;
@@ -110,7 +110,7 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
         );
       }
 
-      // Draw new color
+      // Draw new pixel (color fill + border)
       ctx.fillStyle = currentColor;
       ctx.fillRect(
         pixelX * PIXEL_PER_UNIT,
@@ -119,7 +119,19 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
         PIXEL_PER_UNIT
       );
 
-      // Only save hexColor if it's a valid `Color`
+      const px = pixelX * PIXEL_PER_UNIT;
+      const py = pixelY * PIXEL_PER_UNIT;
+
+      ctx.fillStyle = "#555555";
+      // Top border
+      ctx.fillRect(px, py, PIXEL_PER_UNIT, 1);
+      // Bottom border
+      ctx.fillRect(px, py + PIXEL_PER_UNIT - 1, PIXEL_PER_UNIT, 1);
+      // Left border
+      ctx.fillRect(px, py, 1, PIXEL_PER_UNIT);
+      // Right border
+      ctx.fillRect(px + PIXEL_PER_UNIT - 1, py, 1, PIXEL_PER_UNIT);
+
       if (isValidColor(hexColor)) {
         previousPixel.current = {
           x: pixelX,
@@ -127,7 +139,6 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
           color: hexColor,
         };
       }
-
       setPixelClicked({ x: pixelX, y: pixelY });
     }
   };

@@ -53,7 +53,7 @@ export default function Home() {
 
           setMinSliderValue(scale);
           setSliderValue(scale);
-          setMaxSliderValue(scale * 3);
+          setMaxSliderValue(scale * 5);
         } else {
           console.error("Invalid data structure:", response.data);
         }
