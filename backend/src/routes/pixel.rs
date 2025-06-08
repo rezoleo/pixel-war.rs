@@ -1,9 +1,10 @@
 use crate::routes::state::{
     AppState, COLORS, CanvasSize, PIXEL_FILE_PATH, PixelRegionRequest, PixelRequest,
 };
+use crate::utils::requests::{get_ip, is_request_allowed};
 use axum::{
     extract::State,
-    http::StatusCode,
+    http::{HeaderMap, StatusCode},
     response::{IntoResponse, Json},
 };
 use std::fs::{self, OpenOptions};
@@ -61,9 +62,19 @@ fn nibble_to_hex(n: u8) -> char {
 }
 
 pub async fn handle_pixel_request(
+    headers: HeaderMap,
     State(state): State<AppState>,
     Json(request): Json<PixelRequest>,
 ) -> impl IntoResponse {
+    let ip = get_ip(&headers);
+    if !is_request_allowed(&ip, &state).await {
+        tracing::warn!("Request from {} is not allowed due to rate limiting", ip);
+        return (
+            StatusCode::TOO_MANY_REQUESTS,
+            Json("Too many requests, please try again later"),
+        );
+    }
+
     let size = &state.canvas_size;
 
     if request.x < size.width && request.y < size.height && COLORS.contains(&request.color.as_str())

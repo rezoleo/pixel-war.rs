@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc, time::SystemTime};
 use tokio::sync::Mutex;
 
 #[derive(Serialize, Clone)]
@@ -33,4 +33,6 @@ pub struct PixelRegionRequest {
 pub struct AppState {
     pub canvas_size: Arc<CanvasSize>,
     pub file_lock: Arc<Mutex<()>>, // dummy mutex for synchronizing file access
+    pub delay: u32,                // default demay value in seconds
+    pub ip_timestamps: Arc<Mutex<HashMap<String, SystemTime>>>, // new: track IP cooldown
 }

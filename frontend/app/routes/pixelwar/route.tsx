@@ -16,6 +16,8 @@ export default function Home() {
   const [minSliderValue, setMinSliderValue] = useState<number | null>(null);
   const [maxSliderValue, setMaxSliderValue] = useState<number | null>(null);
   const [canvasSize, setCanvasSize] = useState<CanvasSize | null>(null);
+  const [countdown, setCountdown] = useState<number>(0);
+  const [delay, setDelay] = useState<number | null>(null);
   const [pixelClicked, setPixelClicked] = useState<{
     x: number;
     y: number;
@@ -31,22 +33,72 @@ export default function Home() {
     }
   };
 
-  // Initial fetch of pixel data
+  const fetchDelay = async () => {
+    try {
+      const res = await axios.get("/api/delay");
+      const delay = res.data;
+      if (typeof delay === "number") {
+        setDelay(delay);
+      }
+    } catch (err) {
+      console.error("Failed to fetch delay:", err);
+    }
+  };
+
+  // Countdown effect
   useEffect(() => {
+    if (countdown <= 0) return;
+
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [countdown]);
+
+  // Initial fetch of pixel data and delay
+  useEffect(() => {
+    fetchDelay();
     fetchPixelData();
   }, []);
 
   const handleUpload = async () => {
     if (!pixelClicked) return;
+
     try {
-      await axios.post("/api/pixel", {
+      const response = await axios.post("/api/pixel", {
         x: pixelClicked.x,
         y: pixelClicked.y,
         color: selectedColor,
       });
-      await fetchPixelData(); // Fetch updated data
-    } catch (error) {
-      console.error("Error uploading pixel:", error);
+
+      if (response.status === 200) {
+        await fetchPixelData(); // Refresh pixels if successful
+        if (delay !== null) {
+          setCountdown(delay);
+        }
+      } else {
+        // Non-200 status (rare with axios but just in case)
+        alert(`Upload failed: ${response.data || "Unknown error"}`);
+      }
+    } catch (error: any) {
+      // Axios error or network error
+      if (error.response) {
+        // The server responded with a status code outside 2xx
+        alert(`Error: ${error.response.data || "Request failed"}`);
+      } else if (error.request) {
+        // Request was made but no response received
+        alert("Network error: No response from server");
+      } else {
+        // Other errors (setup, etc)
+        alert(`Unexpected error: ${error.message}`);
+      }
     }
   };
 
@@ -84,7 +136,9 @@ export default function Home() {
       <div className="pt-5 px-3 container mx-auto dark:text-white text-lg">
         <div className="flex justify-center">
           <div className="inline-flex bg-neutral-600 py-1 px-2 rounded-lg">
-            <p className="pr-1 font-bold">Timer</p>
+            <p className="pr-1 font-bold">
+              {countdown > 0 ? `Wait: ${countdown}s` : "Ready"}
+            </p>
             <p className="pr-3 font-bold">
               {pixelClicked ? `(${pixelClicked.x},${pixelClicked.y})` : "(?,?)"}
             </p>
