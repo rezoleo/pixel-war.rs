@@ -20,6 +20,21 @@ export default function Home() {
     x: number;
     y: number;
   } | null>(null);
+  const [pixelsData, setPixelsData] = useState<string | null>(null);
+
+  const fetchPixelData = async () => {
+    try {
+      const res = await axios.get("/api/pixels");
+      setPixelsData(res.data);
+    } catch (err) {
+      console.error("Failed to fetch pixel data:", err);
+    }
+  };
+
+  // Initial fetch of pixel data
+  useEffect(() => {
+    fetchPixelData();
+  }, []);
 
   const handleUpload = async () => {
     if (!pixelClicked) return;
@@ -29,6 +44,7 @@ export default function Home() {
         y: pixelClicked.y,
         color: selectedColor,
       });
+      await fetchPixelData(); // Fetch updated data
     } catch (error) {
       console.error("Error uploading pixel:", error);
     }
@@ -82,6 +98,7 @@ export default function Home() {
         scale={sliderValue}
         currentColor={selectedColor}
         setPixelClicked={setPixelClicked}
+        pixelsData={pixelsData}
       />
       <BottomToolbar
         sliderValue={sliderValue}

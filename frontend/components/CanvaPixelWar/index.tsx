@@ -1,5 +1,6 @@
 import { isValidColor, type Color } from "components/Button/Color";
 import { useEffect, useRef, useState } from "react";
+import updateCanva from "utils/updateCanva";
 
 export const PIXEL_PER_UNIT = 10;
 
@@ -19,6 +20,7 @@ interface CanvasPixelWarProps {
       y: number;
     } | null>
   >;
+  pixelsData: string | null;
 }
 
 const rgbToHex = (r: number, g: number, b: number): string =>
@@ -34,6 +36,7 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
   scale,
   currentColor,
   setPixelClicked,
+  pixelsData,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -48,14 +51,54 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
   const linewidth = 1;
 
   useEffect(() => {
-    if (!canvasRef.current || !width || !height) return;
+    if (!canvasRef.current || !width || !height || !pixelsData) return;
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
 
-    // Fill canvas with white grid
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, width * PIXEL_PER_UNIT, height * PIXEL_PER_UNIT);
-  }, [width, height]);
+    updateCanva({ ctx, width, height, state: pixelsData });
+    previousPixel.current = null;
+    setPixelClicked(null);
+  }, [width, height, pixelsData]);
+
+  useEffect(() => {
+    if (!previousPixel.current) {
+      return;
+    }
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) {
+      return;
+    }
+    const { x, y } = previousPixel.current;
+    ctx.fillStyle = currentColor;
+    ctx.fillRect(
+      x * PIXEL_PER_UNIT,
+      y * PIXEL_PER_UNIT,
+      PIXEL_PER_UNIT,
+      PIXEL_PER_UNIT
+    );
+    ctx.fillStyle = "#555555";
+    const px = x * PIXEL_PER_UNIT;
+    const py = y * PIXEL_PER_UNIT;
+    // Top border
+    ctx.fillRect(px, py, PIXEL_PER_UNIT, linewidth);
+    // Bottom border
+    ctx.fillRect(
+      px,
+      py + PIXEL_PER_UNIT - linewidth,
+      PIXEL_PER_UNIT,
+      linewidth
+    );
+    // Left border
+    ctx.fillRect(px, py, linewidth, PIXEL_PER_UNIT);
+    // Right border
+    ctx.fillRect(
+      px + PIXEL_PER_UNIT - linewidth,
+      py,
+      linewidth,
+      PIXEL_PER_UNIT
+    );
+    ctx.fillStyle = currentColor;
+  }, [currentColor]);
 
   if (!width || !height || !scale) return null;
 
@@ -81,8 +124,8 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
     const pixelY = Math.floor(y / PIXEL_PER_UNIT);
 
     const imageData = ctx.getImageData(
-      pixelX * PIXEL_PER_UNIT,
-      pixelY * PIXEL_PER_UNIT,
+      pixelX * PIXEL_PER_UNIT + linewidth,
+      pixelY * PIXEL_PER_UNIT + linewidth,
       1,
       1
     ).data;
