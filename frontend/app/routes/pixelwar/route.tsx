@@ -68,6 +68,14 @@ export default function Home() {
     fetchPixelData();
   }, []);
 
+  const handleRefresh = async () => {
+    try {
+      await fetchPixelData();
+    } catch (err) {
+      console.error("Failed to refresh pixel data:", err);
+    }
+  };
+
   const handleUpload = async () => {
     if (!pixelClicked) return;
 
@@ -136,9 +144,11 @@ export default function Home() {
       <div className="pt-5 px-3 container mx-auto dark:text-white text-lg">
         <div className="flex justify-center">
           <div className="inline-flex bg-neutral-600 py-1 px-2 rounded-lg">
-            <p className="pr-1 font-bold">
-              {countdown > 0 ? `Wait: ${countdown}s` : "Ready"}
-            </p>
+            {countdown > 0 ? (
+              <p className="pr-1 font-bold text-red-500">{`${countdown}s`}</p>
+            ) : (
+              <p className="pr-1 font-bold text-green-500">Ready</p>
+            )}
             <p className="pr-3 font-bold">
               {pixelClicked ? `(${pixelClicked.x},${pixelClicked.y})` : "(?,?)"}
             </p>
@@ -162,7 +172,7 @@ export default function Home() {
         selectedColor={selectedColor}
         onColorSelect={setSelectedColor}
         onSliderChange={setSliderValue}
-        onRefresh={() => {}}
+        onRefresh={handleRefresh}
         onUpload={handleUpload}
       />
     </div>
