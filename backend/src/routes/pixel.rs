@@ -4,27 +4,39 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Json},
 };
-use std::fs;
-use std::io::Write;
+use std::fs::{self, OpenOptions};
+use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::Path;
 use std::sync::Arc;
 
-fn write_prixel_data(x: &i32, y: &i32, color: &str) -> std::io::Result<()> {
-    let mut file = fs::OpenOptions::new()
+fn write_pixel_data(x: &u32, y: &u32, color_index: &u8, size: &CanvasSize) -> std::io::Result<()> {
+    // Compute pixel index and offset
+    let pixel_index = (y * size.width + x) as u64;
+    let offset = pixel_index / 2; // Two pixels per byte
+
+    // Open file
+    let mut file = OpenOptions::new()
+        .read(true)
         .write(true)
-        .append(true)
         .open(PIXEL_FILE_PATH)?;
 
-    // Convert color to a byte representation (for simplicity, using index of color)
-    if let Some(index) = COLORS.iter().position(|&c| c == color) {
-        let byte = index as u8;
-        file.write_all(&[byte])?;
+    // Seek and read current byte
+    file.seek(SeekFrom::Start(offset))?;
+    let mut byte = [0u8];
+    file.read_exact(&mut byte)?;
+    file.seek(SeekFrom::Start(offset))?; // Re-seek after reading
+
+    // Update the correct nibble
+    let updated_byte = if pixel_index % 2 == 0 {
+        // Even pixel: high nibble
+        (byte[0] & 0x0F) | (color_index << 4)
     } else {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidInput,
-            "Invalid color",
-        ));
-    }
+        // Odd pixel: low nibble
+        (byte[0] & 0xF0) | color_index
+    };
+
+    // Write updated byte
+    file.write_all(&[updated_byte])?;
 
     Ok(())
 }
@@ -43,21 +55,36 @@ pub async fn handle_pixel_request(
 ) -> impl IntoResponse {
     if request.x < size.width && request.y < size.height && COLORS.contains(&request.color.as_str())
     {
-        // Here you would handle the pixel update logic
-        tracing::info!(
-            "Received pixel update at ({}, {}) with color {}",
-            request.x,
-            request.y,
-            request.color
-        );
-        Json("Pixel updated successfully")
+        let color_index = COLORS
+            .iter()
+            .position(|&c| c == request.color)
+            .expect("Color not found in COLORS array") as u8;
+
+        match write_pixel_data(&request.x, &request.y, &color_index, &size) {
+            Ok(_) => {
+                tracing::info!(
+                    "Pixel updated at ({}, {}) with color {}",
+                    request.x,
+                    request.y,
+                    request.color
+                );
+                (StatusCode::OK, Json("Pixel updated successfully"))
+            }
+            Err(e) => {
+                tracing::error!("Failed to write pixel data: {}", e);
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json("Failed to write pixel"),
+                )
+            }
+        }
     } else {
         tracing::warn!(
-            "Received pixel update out of bounds: ({}, {})",
+            "Received pixel update out of bounds or invalid color: ({}, {})",
             request.x,
             request.y
         );
-        Json("Pixel update out of bounds")
+        (StatusCode::BAD_REQUEST, Json("Invalid pixel data"))
     }
 }
 
