@@ -7,12 +7,12 @@ export default function updateBaseScale(
   // Calculate the initial scale based on the pixel war dimensions and screen size
 
   if (
-    (0.75 * screenWidth) / width_pixel_war >
+    (0.9 * screenWidth) / width_pixel_war >
     (0.7 * screenHeight) / height_pixel_war
   ) {
     //estimated free space occupied by the pixel war after transform
     return (0.7 * screenHeight) / height_pixel_war;
   } else {
-    return (0.75 * screenWidth) / width_pixel_war;
+    return (0.9 * screenWidth) / width_pixel_war;
   }
 }

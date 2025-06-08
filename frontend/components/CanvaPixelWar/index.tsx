@@ -45,6 +45,7 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
     color: Color;
   } | null>(null);
   const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const linewidth = 1;
 
   useEffect(() => {
     if (!canvasRef.current || !width || !height) return;
@@ -124,13 +125,23 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
 
       ctx.fillStyle = "#555555";
       // Top border
-      ctx.fillRect(px, py, PIXEL_PER_UNIT, 1);
+      ctx.fillRect(px, py, PIXEL_PER_UNIT, linewidth);
       // Bottom border
-      ctx.fillRect(px, py + PIXEL_PER_UNIT - 1, PIXEL_PER_UNIT, 1);
+      ctx.fillRect(
+        px,
+        py + PIXEL_PER_UNIT - linewidth,
+        PIXEL_PER_UNIT,
+        linewidth
+      );
       // Left border
-      ctx.fillRect(px, py, 1, PIXEL_PER_UNIT);
+      ctx.fillRect(px, py, linewidth, PIXEL_PER_UNIT);
       // Right border
-      ctx.fillRect(px + PIXEL_PER_UNIT - 1, py, 1, PIXEL_PER_UNIT);
+      ctx.fillRect(
+        px + PIXEL_PER_UNIT - linewidth,
+        py,
+        linewidth,
+        PIXEL_PER_UNIT
+      );
 
       if (isValidColor(hexColor)) {
         previousPixel.current = {
