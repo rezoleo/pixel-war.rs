@@ -6,6 +6,7 @@ use axum::{
     routing::{get, post},
 };
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
 use tracing_subscriber;
 
@@ -20,6 +21,11 @@ async fn main() {
         height: 80,
     });
 
+    let shared_state = AppState {
+        canvas_size: Arc::clone(&canvas_size),
+        file_lock: Arc::new(Mutex::new(())),
+    };
+
     // utils::init_pixel_file("state/pixels.bin", &canvas_size).expect("Failed to init pixels.bin");
 
     let app = Router::new()
@@ -28,7 +34,7 @@ async fn main() {
         .route("/api/pixels", get(get_all_pixels))
         .route("/api/pixels", post(get_pixel_region))
         .fallback_service(ServeDir::new("./frontend/dist").not_found_service(get(spa_fallback)))
-        .with_state(canvas_size);
+        .with_state(shared_state);
 
     let listener = tokio::net::TcpListener::bind(ADDRESS)
         .await

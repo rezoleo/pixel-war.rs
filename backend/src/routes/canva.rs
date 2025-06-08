@@ -1,9 +1,8 @@
-use crate::routes::state::CanvasSize;
+use crate::routes::state::{AppState, CanvasSize};
 use axum::{extract::State, response::Json};
-use std::sync::Arc;
 
-pub async fn get_canvas_size(State(size): State<Arc<CanvasSize>>) -> Json<CanvasSize> {
-    Json(size.as_ref().clone())
+pub async fn get_canvas_size(State(state): State<AppState>) -> Json<CanvasSize> {
+    Json(state.canvas_size.as_ref().clone())
 }
 
 pub async fn spa_fallback() -> axum::response::Html<String> {

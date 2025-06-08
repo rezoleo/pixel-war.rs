@@ -1,4 +1,6 @@
-use crate::routes::state::{COLORS, CanvasSize, PIXEL_FILE_PATH, PixelRegionRequest, PixelRequest};
+use crate::routes::state::{
+    AppState, COLORS, CanvasSize, PIXEL_FILE_PATH, PixelRegionRequest, PixelRequest,
+};
 use axum::{
     extract::State,
     http::StatusCode,
@@ -7,12 +9,21 @@ use axum::{
 use std::fs::{self, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::Path;
-use std::sync::Arc;
 
-fn write_pixel_data(x: &u32, y: &u32, color_index: &u8, size: &CanvasSize) -> std::io::Result<()> {
+async fn write_pixel_data_locked(
+    x: &u32,
+    y: &u32,
+    color_index: &u8,
+    state: &AppState,
+) -> std::io::Result<()> {
+    let size = &state.canvas_size;
+
     // Compute pixel index and offset
     let pixel_index = (y * size.width + x) as u64;
     let offset = pixel_index / 2; // Two pixels per byte
+
+    // Locking file access, unlock when going out of scope
+    let _guard = state.file_lock.lock().await;
 
     // Open file
     let mut file = OpenOptions::new()
@@ -50,9 +61,11 @@ fn nibble_to_hex(n: u8) -> char {
 }
 
 pub async fn handle_pixel_request(
-    State(size): State<Arc<CanvasSize>>,
+    State(state): State<AppState>,
     Json(request): Json<PixelRequest>,
 ) -> impl IntoResponse {
+    let size = &state.canvas_size;
+
     if request.x < size.width && request.y < size.height && COLORS.contains(&request.color.as_str())
     {
         let color_index = COLORS
@@ -60,7 +73,7 @@ pub async fn handle_pixel_request(
             .position(|&c| c == request.color)
             .expect("Color not found in COLORS array") as u8;
 
-        match write_pixel_data(&request.x, &request.y, &color_index, &size) {
+        match write_pixel_data_locked(&request.x, &request.y, &color_index, &state).await {
             Ok(_) => {
                 tracing::info!(
                     "Pixel updated at ({}, {}) with color {}",
@@ -106,9 +119,11 @@ pub async fn get_all_pixels() -> Json<String> {
 }
 
 pub async fn get_pixel_region(
-    State(size): State<Arc<CanvasSize>>,
+    State(state): State<AppState>,
     Json(region): Json<PixelRegionRequest>,
 ) -> impl IntoResponse {
+    let size = &state.canvas_size;
+
     let Ok(data) = fs::read(PIXEL_FILE_PATH) else {
         return (StatusCode::INTERNAL_SERVER_ERROR, Json(String::new()));
     };

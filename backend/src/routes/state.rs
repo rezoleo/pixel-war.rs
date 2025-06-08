@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 #[derive(Serialize, Clone)]
 pub struct CanvasSize {
@@ -25,4 +27,10 @@ pub struct PixelRegionRequest {
     pub yStart: u32,
     pub xEnd: u32,
     pub yEnd: u32,
+}
+
+#[derive(Clone)]
+pub struct AppState {
+    pub canvas_size: Arc<CanvasSize>,
+    pub file_lock: Arc<Mutex<()>>, // dummy mutex for synchronizing file access
 }
