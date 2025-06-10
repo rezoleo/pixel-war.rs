@@ -1,0 +1,5 @@
+[auth]
+admin_hashed_password = ""
+
+[cookies]
+key_base64 = ""

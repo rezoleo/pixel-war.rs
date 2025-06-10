@@ -1,3 +1,5 @@
+use crate::config::AuthConfig;
+use axum_extra::extract::cookie::Key;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, sync::Arc, time::SystemTime};
 use tokio::sync::Mutex;
@@ -33,6 +35,8 @@ pub struct PixelRegionRequest {
 pub struct AppState {
     pub canvas_size: Arc<CanvasSize>,
     pub file_lock: Arc<Mutex<()>>, // dummy mutex for synchronizing file access
-    pub delay: u32,                // default demay value in seconds
+    pub delay: u32,                // default delay value in seconds
     pub ip_timestamps: Arc<Mutex<HashMap<String, SystemTime>>>, // new: track IP cooldown
+    pub auth: AuthConfig,
+    pub cookie_key: Key,
 }

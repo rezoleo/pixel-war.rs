@@ -36,3 +36,4 @@ frontend/media/*.zip
 frontend/.env*
 
 backend/state/pixels.bin
+backend/config.toml
