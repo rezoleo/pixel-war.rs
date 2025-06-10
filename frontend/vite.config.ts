@@ -4,17 +4,13 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [
-    tailwindcss(),
-    reactRouter(),
-    tsconfigPaths(),
-  ],
+  plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
   server: {
     proxy: {
       "/api": "http://localhost:3000",
     },
   },
   build: {
-    outDir: "dist",
+    minify: false,
   },
 });

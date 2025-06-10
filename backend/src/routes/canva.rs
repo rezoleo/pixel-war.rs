@@ -10,7 +10,7 @@ pub async fn get_delay(State(state): State<AppState>) -> Json<u32> {
 }
 
 pub async fn spa_fallback() -> axum::response::Html<String> {
-    let html = std::fs::read_to_string("frontend/dist/index.html")
-        .unwrap_or_else(|_| "<h1>404</h1>".to_string());
+    let html =
+        std::fs::read_to_string("static/index.html").unwrap_or_else(|_| "<h1>404</h1>".to_string());
     axum::response::Html(html)
 }

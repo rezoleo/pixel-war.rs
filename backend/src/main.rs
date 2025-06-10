@@ -60,7 +60,7 @@ async fn main() {
         .route("/api/delay", get(get_delay))
         .route("/api/admin-login", post(admin_login))
         .route("/api/me", get(me))
-        .fallback_service(ServeDir::new("./frontend/dist").not_found_service(get(spa_fallback)))
+        .fallback_service(ServeDir::new("static/").not_found_service(get(spa_fallback)))
         .with_state(shared_state);
 
     let listener = tokio::net::TcpListener::bind(ADDRESS)

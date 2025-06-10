@@ -16,5 +16,5 @@
 # Copy the frontend build to the backend static directory
 (
     mkdir -p backend/static
-    cp -r frontend/out/* backend/static/
+    cp -r frontend/build/client/* backend/static/
 )
