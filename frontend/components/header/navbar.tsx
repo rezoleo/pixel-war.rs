@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import NavbarLinks from "./navbarLinks";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
-const links = [
+const basicLinks = [
   { href: "/", label: "Home" },
   { href: "/pixelwar", label: "Pixel War" },
   { href: "/spectate", label: "Spectate" },
@@ -10,6 +11,30 @@ const links = [
 ];
 
 const Navbar: React.FC = () => {
+  const [links, setLinks] = useState(basicLinks);
+
+  useEffect(() => {
+    axios
+      .get("/api/me")
+      .then((response) => {
+        if (response.data.admin) {
+          setLinks((prevLinks) => {
+            // Only add if not already present
+            if (!prevLinks.some((link) => link.href === "/admin-control")) {
+              return [
+                ...prevLinks,
+                { href: "/admin-control", label: "Admin Control" },
+              ];
+            }
+            return prevLinks;
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching user data:", error);
+      });
+  }, []);
+
   return (
     <nav className="bg-linear-to-r px-3 from-rose-900 to-red-950 text-white shadow-md">
       <div className="container mx-auto flex py-5">
