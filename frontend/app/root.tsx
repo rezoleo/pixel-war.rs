@@ -33,14 +33,14 @@ export function meta({}: Route.MetaArgs) {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" className="min-h-screen">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="min-h-screen flex flex-col bg-neutral-900">
         <Header />
         {children}
         <ScrollRestoration />

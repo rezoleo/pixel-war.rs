@@ -2,7 +2,8 @@ use crate::routes::state::AppState;
 use axum::{
     Json,
     extract::{Form, State},
-    response::{IntoResponse, Redirect},
+    http::StatusCode,
+    response::IntoResponse,
 };
 use axum_extra::extract::cookie::{Cookie, PrivateCookieJar};
 use bcrypt::verify;
@@ -32,9 +33,22 @@ pub async fn admin_login(
         cookie.set_path("/");
 
         let jar = jar.add(cookie);
-        (jar, Redirect::to("/admin-control"))
+        (
+            jar,
+            (
+                StatusCode::OK,
+                Json(serde_json::json!({ "message": "Login successful" })),
+            ),
+        )
     } else {
-        (jar, Redirect::to("/admin-login?error=bad_password"))
+        use axum::http::StatusCode;
+        (
+            jar,
+            (
+                StatusCode::UNAUTHORIZED,
+                Json(serde_json::json!({ "error": "Bad Password" })),
+            ),
+        )
     }
 }
 

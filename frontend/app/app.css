@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-body {
-  background-color: oklch(20.5% 0 0);
-  min-height: 100vh
-}
-
 .color-buttons:hover::after,
 .color-buttons:focus-visible::after {
   content: attr(title);
