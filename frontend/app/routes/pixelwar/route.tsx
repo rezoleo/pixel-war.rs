@@ -64,8 +64,7 @@ export default function Home() {
 
   // Initial fetch of pixel data and delay
   useEffect(() => {
-    fetchDelay();
-    fetchPixelData();
+    Promise.all([fetchDelay(), fetchPixelData()]);
   }, []);
 
   const handleRefresh = async () => {

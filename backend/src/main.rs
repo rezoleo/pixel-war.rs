@@ -59,6 +59,7 @@ async fn main() {
         .route("/api/pixels", post(get_pixel_region))
         .route("/api/delay", get(get_delay))
         .route("/api/admin-login", post(admin_login))
+        .route("/api/admin/pixels", post(admin_whitening))
         .route("/api/me", get(me))
         .fallback_service(ServeDir::new("static/").not_found_service(get(spa_fallback)))
         .with_state(shared_state);

@@ -1,6 +1,12 @@
 import { isValidColor, type Color } from "components/Button/Color";
 import { useEffect, useRef, useState } from "react";
 import updateCanva from "utils/updateCanva";
+import {
+  rgbToHex,
+  drawPixel,
+  fillWhitenedArea,
+  isInsideCanvas,
+} from "utils/canvaHelpers";
 
 export const PIXEL_PER_UNIT = 10;
 
@@ -29,13 +35,6 @@ interface CanvasPixelWarProps {
     y: number | null;
   };
 }
-
-const rgbToHex = (r: number, g: number, b: number): string =>
-  "#" +
-  [r, g, b]
-    .map((x) => x.toString(16).padStart(2, "0"))
-    .join("")
-    .toUpperCase();
 
 const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
   width,
@@ -73,45 +72,20 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
   }, [width, height, pixelsData, refresh]);
 
   useEffect(() => {
-    // only in non admin page
-    if (admin) return;
-    if (!previousPixel.current) {
-      return;
-    }
+    if (admin && pixelStart?.x === null && pixelStart?.y === null)
+      setRefresh(!refresh);
+  }, [pixelStart]);
+
+  useEffect(() => {
+    if (admin || !previousPixel.current) return;
     const ctx = canvasRef.current?.getContext("2d");
-    if (!ctx) {
-      return;
-    }
-    const { x, y } = previousPixel.current;
-    ctx.fillStyle = currentColor;
-    ctx.fillRect(
-      x * PIXEL_PER_UNIT,
-      y * PIXEL_PER_UNIT,
-      PIXEL_PER_UNIT,
-      PIXEL_PER_UNIT
+    if (!ctx) return;
+    drawPixel(
+      ctx,
+      previousPixel.current.x,
+      previousPixel.current.y,
+      currentColor
     );
-    ctx.fillStyle = "#555555";
-    const px = x * PIXEL_PER_UNIT;
-    const py = y * PIXEL_PER_UNIT;
-    // Top border
-    ctx.fillRect(px, py, PIXEL_PER_UNIT, linewidth);
-    // Bottom border
-    ctx.fillRect(
-      px,
-      py + PIXEL_PER_UNIT - linewidth,
-      PIXEL_PER_UNIT,
-      linewidth
-    );
-    // Left border
-    ctx.fillRect(px, py, linewidth, PIXEL_PER_UNIT);
-    // Right border
-    ctx.fillRect(
-      px + PIXEL_PER_UNIT - linewidth,
-      py,
-      linewidth,
-      PIXEL_PER_UNIT
-    );
-    ctx.fillStyle = currentColor;
   }, [currentColor]);
 
   if (!width || !height || !scale) return null;
@@ -119,9 +93,12 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
   const canvasWidth = width * PIXEL_PER_UNIT;
   const canvasHeight = height * PIXEL_PER_UNIT;
 
-  let handleMouseDown;
-  if (!admin) {
-    handleMouseDown = (e: React.MouseEvent) => {
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!rect || !ctx) return;
+
+    if (!admin) {
       setIsDragging(true);
       setDragStarted(false);
       dragStart.current = {
@@ -129,13 +106,8 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
         y: e.clientY - translate.y,
       };
 
-      const rect = canvasRef.current?.getBoundingClientRect();
-      const ctx = canvasRef.current?.getContext("2d");
-      if (!rect || !ctx) return;
-
       const x = (e.clientX - rect.left) / scale;
       const y = (e.clientY - rect.top) / scale;
-
       const pixelX = Math.floor(x / PIXEL_PER_UNIT);
       const pixelY = Math.floor(y / PIXEL_PER_UNIT);
 
@@ -145,7 +117,6 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
         1,
         1
       ).data;
-
       const hexColor = rgbToHex(imageData[0], imageData[1], imageData[2]);
 
       // Only update pixel if it's different from the previous one
@@ -156,51 +127,18 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
         return;
       }
 
-      // Check if pixel is within bounds
       if (pixelX >= 0 && pixelX < width && pixelY >= 0 && pixelY < height) {
-        // Restore previous pixel (full square, no border)
         if (previousPixel.current) {
-          const { x, y, color } = previousPixel.current;
-          ctx.fillStyle = color;
-          ctx.fillRect(
-            x * PIXEL_PER_UNIT,
-            y * PIXEL_PER_UNIT,
-            PIXEL_PER_UNIT,
-            PIXEL_PER_UNIT
+          drawPixel(
+            ctx,
+            previousPixel.current.x,
+            previousPixel.current.y,
+            previousPixel.current.color,
+            false
           );
         }
 
-        // Draw new pixel (color fill + border)
-        ctx.fillStyle = currentColor;
-        ctx.fillRect(
-          pixelX * PIXEL_PER_UNIT,
-          pixelY * PIXEL_PER_UNIT,
-          PIXEL_PER_UNIT,
-          PIXEL_PER_UNIT
-        );
-
-        const px = pixelX * PIXEL_PER_UNIT;
-        const py = pixelY * PIXEL_PER_UNIT;
-
-        ctx.fillStyle = "#555555";
-        // Top border
-        ctx.fillRect(px, py, PIXEL_PER_UNIT, linewidth);
-        // Bottom border
-        ctx.fillRect(
-          px,
-          py + PIXEL_PER_UNIT - linewidth,
-          PIXEL_PER_UNIT,
-          linewidth
-        );
-        // Left border
-        ctx.fillRect(px, py, linewidth, PIXEL_PER_UNIT);
-        // Right border
-        ctx.fillRect(
-          px + PIXEL_PER_UNIT - linewidth,
-          py,
-          linewidth,
-          PIXEL_PER_UNIT
-        );
+        drawPixel(ctx, pixelX, pixelY, currentColor);
 
         if (isValidColor(hexColor)) {
           previousPixel.current = {
@@ -211,13 +149,10 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
         }
         setPixelClicked({ x: pixelX, y: pixelY });
       }
-    };
-  } else {
-    handleMouseDown = (e: React.MouseEvent) => {
+    } else {
+      if (!isInsideCanvas(e, rect)) return;
       if (!setPixelStart) return;
-      const rect = canvasRef.current?.getBoundingClientRect();
-      const ctx = canvasRef.current?.getContext("2d");
-      if (!rect || !ctx) return;
+
       setRefresh(!refresh);
       const x = (e.clientX - rect.left) / scale;
       const y = (e.clientY - rect.top) / scale;
@@ -225,12 +160,11 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
       const pixelY = Math.floor(y / PIXEL_PER_UNIT);
 
       setPixelStart(pixelX, pixelY);
-    };
-  }
+    }
+  };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (admin) return;
-    if (!isDragging || !dragStart.current) return;
+    if (admin || !isDragging || !dragStart.current) return;
 
     const newX = e.clientX - dragStart.current.x;
     const newY = e.clientY - dragStart.current.y;
@@ -248,72 +182,40 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
     setTranslate({ x: newX, y: newY });
   };
 
-  let handleMouseUp;
-  if (!admin) {
-    handleMouseUp = () => {
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!admin) {
       setIsDragging(false);
       setDragStarted(false);
       dragStart.current = null;
-    };
-  } else {
-    handleMouseUp = (e: React.MouseEvent) => {
-      const rect = canvasRef.current?.getBoundingClientRect();
-      const ctx = canvasRef.current?.getContext("2d");
-      if (!rect || !ctx || !pixelStart || !setPixelStart || !setPixelEnd)
-        return;
-      const x = Math.floor((e.clientX - rect.left) / (PIXEL_PER_UNIT * scale));
-      const y = Math.floor((e.clientY - rect.top) / (PIXEL_PER_UNIT * scale));
-      const xStart = Math.max(0, pixelStart.x || 0);
-      const yStart = Math.max(0, pixelStart.y || 0);
-      const xEnd = Math.max(0, x);
-      const yEnd = Math.max(0, y);
+      return;
+    }
 
-      const xMin = Math.min(xStart, xEnd);
-      const yMin = Math.min(yStart, yEnd);
-      const xMax = Math.max(xStart, xEnd);
-      const yMax = Math.max(yStart, yEnd);
+    const rect = canvasRef.current?.getBoundingClientRect();
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!rect || !ctx || !pixelStart || !setPixelStart || !setPixelEnd) return;
+    if (!isInsideCanvas(e, rect)) return;
 
-      setPixelStart(xMin, yMin);
-      setPixelEnd(xMax, yMax);
+    const x = Math.floor((e.clientX - rect.left) / (PIXEL_PER_UNIT * scale));
+    const y = Math.floor((e.clientY - rect.top) / (PIXEL_PER_UNIT * scale));
+    const xStart = Math.max(0, pixelStart.x || 0);
+    const yStart = Math.max(0, pixelStart.y || 0);
+    const xEnd = Math.max(0, x);
+    const yEnd = Math.max(0, y);
 
-      ctx.fillStyle = currentColor;
+    const xMin = Math.min(xStart, xEnd);
+    const yMin = Math.min(yStart, yEnd);
+    const xMax = Math.max(xStart, xEnd);
+    const yMax = Math.max(yStart, yEnd);
 
-      // Byte-alignment logic for white rectangle
-      if (xMin % 2 === 0 && xMax % 2 === 0) {
-        ctx.fillRect(
-          xMin * PIXEL_PER_UNIT,
-          yMin * PIXEL_PER_UNIT,
-          (xMax + 2 - xMin) * PIXEL_PER_UNIT,
-          (yMax + 1 - yMin) * PIXEL_PER_UNIT
-        );
-      } else if (xMin % 2 === 1 && xMax % 2 === 1) {
-        ctx.fillRect(
-          (xMin - 1) * PIXEL_PER_UNIT,
-          yMin * PIXEL_PER_UNIT,
-          (xMax + 2 - xMin) * PIXEL_PER_UNIT,
-          (yMax + 1 - yMin) * PIXEL_PER_UNIT
-        );
-      } else if (xMin % 2 === 1 && xMax % 2 === 0) {
-        ctx.fillRect(
-          (xMin - 1) * PIXEL_PER_UNIT,
-          yMin * PIXEL_PER_UNIT,
-          (xMax + 1 - xMin) * PIXEL_PER_UNIT,
-          (yMax + 1 - yMin) * PIXEL_PER_UNIT
-        );
-      } else {
-        ctx.fillRect(
-          xMin * PIXEL_PER_UNIT,
-          yMin * PIXEL_PER_UNIT,
-          (xMax + 1 - xMin) * PIXEL_PER_UNIT,
-          (yMax + 1 - yMin) * PIXEL_PER_UNIT
-        );
-      }
-    };
-  }
+    setPixelStart(xMin, yMin);
+    setPixelEnd(xMax, yMax);
+
+    fillWhitenedArea(ctx, xMin, yMin, xMax, yMax, currentColor);
+  };
 
   return (
     <div
-      className="w-full h-full overflow-hidden flex justify-center items-start mt-3"
+      className="h-full overflow-hidden flex justify-center items-start mt-3"
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}

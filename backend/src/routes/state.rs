@@ -17,6 +17,18 @@ pub const COLORS: [&'static str; 16] = [
 ];
 
 #[derive(Deserialize)]
+pub struct Pixel {
+    pub x: u32,
+    pub y: u32,
+}
+
+#[derive(Deserialize)]
+pub struct PixelRange {
+    pub start: Pixel,
+    pub end: Pixel,
+}
+
+#[derive(Deserialize)]
 pub struct PixelRequest {
     pub x: u32,
     pub y: u32,

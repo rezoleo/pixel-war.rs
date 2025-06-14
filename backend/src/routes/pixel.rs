@@ -1,12 +1,16 @@
+use crate::routes::admin::is_user_admin;
 use crate::routes::state::{
-    AppState, COLORS, CanvasSize, PIXEL_FILE_PATH, PixelRegionRequest, PixelRequest,
+    AppState, COLORS, CanvasSize, PIXEL_FILE_PATH, PixelRange, PixelRegionRequest, PixelRequest,
 };
+
 use crate::utils::requests::{get_ip, is_request_allowed};
 use axum::{
     extract::State,
     http::{HeaderMap, StatusCode},
     response::{IntoResponse, Json},
 };
+use axum_extra::extract::cookie::PrivateCookieJar;
+use serde_json::json;
 use std::fs::{self, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::Path;
@@ -178,5 +182,79 @@ pub fn init_pixel_file(path: &str, size: &CanvasSize) -> std::io::Result<()> {
 
     let mut file = fs::File::create(path)?;
     file.write_all(&buffer)?;
+    Ok(())
+}
+
+pub async fn admin_whitening(
+    State(state): State<AppState>,
+    jar: PrivateCookieJar,
+    Json(payload): Json<PixelRange>,
+) -> impl IntoResponse {
+    if !is_user_admin(&jar) {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(json!({ "error": "Unauthorized" })),
+        );
+    }
+
+    let start = payload.start;
+    let end = payload.end;
+
+    let x_min = start.x.min(end.x);
+    let y_min = start.y.min(end.y);
+    let x_max = start.x.max(end.x);
+    let y_max = start.y.max(end.y);
+
+    match whiten_area(x_min, y_min, x_max, y_max, &state).await {
+        Ok(_) => (
+            StatusCode::OK,
+            Json(json!({ "message": "Pixels whitened successfully" })),
+        ),
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({ "error": format!("Failed to whiten pixels: {}", e) })),
+        ),
+    }
+}
+
+async fn whiten_area(
+    x_min: u32,
+    y_min: u32,
+    x_max: u32,
+    y_max: u32,
+    state: &AppState,
+) -> std::io::Result<()> {
+    let width = state.canvas_size.width;
+    let height = state.canvas_size.height;
+
+    // Bounds check
+    if x_min > x_max || y_min > y_max || x_max >= width || y_max >= height {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "Invalid coordinates for whitening",
+        ));
+    }
+
+    // Prepare the lock for exclusive file access
+    let _guard = state.file_lock.lock().await;
+
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(PIXEL_FILE_PATH)?;
+
+    let start_offset = (y_min * width + x_min) / 2;
+    let bytes_per_row = ((x_max - x_min) / 2) + 1;
+    let blank_row = vec![0u8; bytes_per_row as usize];
+    let bytes_per_canvas_row = width / 2;
+
+    let mut offset = start_offset;
+
+    for _ in y_min..=y_max {
+        file.seek(SeekFrom::Start(offset as u64))?;
+        file.write_all(&blank_row)?;
+        offset += bytes_per_canvas_row;
+    }
+
     Ok(())
 }

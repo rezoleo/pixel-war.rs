@@ -60,3 +60,9 @@ pub async fn me(State(_state): State<AppState>, jar: PrivateCookieJar) -> impl I
 
     Json(UserInfo { admin: is_admin })
 }
+
+pub fn is_user_admin(jar: &PrivateCookieJar) -> bool {
+    jar.get("admin")
+        .map(|cookie| cookie.value() == "true")
+        .unwrap_or(false)
+}
