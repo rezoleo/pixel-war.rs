@@ -2,7 +2,11 @@ use crate::routes::state::{AppState, CanvasSize};
 use axum::{extract::State, response::Json};
 
 pub async fn get_canvas_size(State(state): State<AppState>) -> Json<CanvasSize> {
-    Json(state.canvas_size.as_ref().clone())
+    let canvas_size = state.canvas_size.lock().await;
+    Json(CanvasSize {
+        width: canvas_size.width,
+        height: canvas_size.height,
+    })
 }
 
 pub async fn get_delay(State(state): State<AppState>) -> Json<u32> {

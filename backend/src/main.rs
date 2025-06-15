@@ -36,21 +36,28 @@ async fn main() {
 
     let key = Key::from(&key_bytes); // use slice &[u8] to build cookie Key
 
-    let canvas_size = Arc::new(CanvasSize {
-        width: 80,
-        height: 80,
-    });
+    let canvas_size = Arc::new(Mutex::new(CanvasSize {
+        width: config.file.width,
+        height: config.file.height,
+    }));
 
     let shared_state = AppState {
         canvas_size: Arc::clone(&canvas_size),
         file_lock: Arc::new(Mutex::new(())),
-        delay: 5,
+        delay: config.file.delay,
         ip_timestamps: Arc::new(Mutex::new(HashMap::new())),
         cookie_key: key,
         auth: config.auth,
+        file_path: Arc::new(config.file.file_path.clone()),
     };
 
-    // utils::init_pixel_file("state/pixels.bin", &canvas_size).expect("Failed to init pixels.bin");
+    // Initialize the pixel file if it doesn't exist
+    // Uncomment the following lines if you want to initialize the pixel file
+    // {
+    //     let canvas_size_guard = canvas_size.lock().await;
+    //     init_pixel_file("state/pixels.bin", &*canvas_size_guard)
+    //         .expect("Failed to init pixels.bin");
+    // }
 
     let app = Router::new()
         .route("/api/size", get(get_canvas_size))
@@ -60,6 +67,7 @@ async fn main() {
         .route("/api/delay", get(get_delay))
         .route("/api/admin-login", post(admin_login))
         .route("/api/admin/pixels", post(admin_whitening))
+        .route("/api/admin/size", post(update_canvas_size))
         .route("/api/me", get(me))
         .fallback_service(ServeDir::new("static/").not_found_service(get(spa_fallback)))
         .with_state(shared_state);

@@ -1,4 +1,7 @@
-use crate::routes::state::AppState;
+use crate::routes::{
+    pixel::resize_canvas_locked,
+    state::{AppState, CanvasSize},
+};
 use axum::{
     Json,
     extract::{Form, State},
@@ -8,6 +11,7 @@ use axum::{
 use axum_extra::extract::cookie::{Cookie, PrivateCookieJar};
 use bcrypt::verify;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 #[derive(Deserialize)]
 pub struct LoginForm {
@@ -65,4 +69,32 @@ pub fn is_user_admin(jar: &PrivateCookieJar) -> bool {
     jar.get("admin")
         .map(|cookie| cookie.value() == "true")
         .unwrap_or(false)
+}
+
+pub async fn update_canvas_size(
+    State(state): State<AppState>,
+    jar: PrivateCookieJar,
+    Json(payload): Json<CanvasSize>,
+) -> impl IntoResponse {
+    if !is_user_admin(&jar) {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(json!({ "error": "Unauthorized" })),
+        );
+    }
+    tracing::info!(
+        "Admin requested canvas resize to {}x{}",
+        payload.width,
+        payload.height
+    );
+    match resize_canvas_locked(payload.width, payload.height, &state).await {
+        Ok(_) => (
+            StatusCode::OK,
+            Json(json!({ "message": "Canvas size updated successfully" })),
+        ),
+        Err(e) => (
+            StatusCode::BAD_REQUEST,
+            Json(json!({ "error": format!("Failed to resize canvas: {}", e) })),
+        ),
+    }
 }

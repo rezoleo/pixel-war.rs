@@ -11,9 +11,18 @@ pub struct CookieConfig {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct FileConfig {
+    pub width: u32,
+    pub height: u32,
+    pub delay: u32,
+    pub file_path: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct AppConfig {
     pub auth: AuthConfig,
     pub cookies: CookieConfig,
+    pub file: FileConfig,
 }
 
 impl AppConfig {

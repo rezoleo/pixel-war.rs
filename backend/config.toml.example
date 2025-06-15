@@ -3,3 +3,9 @@ admin_hashed_password = ""
 
 [cookies]
 key_base64 = ""
+
+[file]
+width = 80
+height = 80
+delay = 5 # in seconds
+file_path = "state/pixels.bin"

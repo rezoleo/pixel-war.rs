@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Button from "components/Button";
+import Input from "components/Input";
 
 export default function Home() {
   const [password, setPassword] = useState("");
@@ -44,14 +45,13 @@ export default function Home() {
             </p>
           </div>
         )}
-        <input
+        <Input
           type="password"
           name="password"
           placeholder="Enter admin password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full bg-white px-6 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+          required={true}
         />
         <div className="flex items-center justify-center">
           <Button
