@@ -74,6 +74,7 @@ const AdminNewSize: React.FC<AdminNewSizeProps> = ({ canvasSize }) => {
 
   return (
     <div className="mt-8 flex flex-col justify-center items-center w-full border-t-2 border-neutral-300 pt-4">
+      <h3 className="text-xl font-bold dark:text-white text-black mb-4">{`Current size (${canvasSize?.width},${canvasSize?.height}), put event numbers only`}</h3>
       <div className="flew flex-row items-center mb-4">
         <Input
           type="number"
