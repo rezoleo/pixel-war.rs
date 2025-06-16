@@ -19,10 +19,16 @@ pub struct FileConfig {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct StateConfig {
+    pub active: bool,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct AppConfig {
     pub auth: AuthConfig,
     pub cookies: CookieConfig,
     pub file: FileConfig,
+    pub state: StateConfig,
 }
 
 impl AppConfig {

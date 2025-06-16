@@ -63,6 +63,13 @@ pub async fn handle_pixel_request(
     State(state): State<AppState>,
     Json(request): Json<PixelRequest>,
 ) -> impl IntoResponse {
+    let active_guard = state.active.lock().await;
+    if !*active_guard {
+        return (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json("Service is currently unavailable"),
+        );
+    }
     let ip = get_ip(&headers);
     if !is_request_allowed(&ip, &state).await {
         return (

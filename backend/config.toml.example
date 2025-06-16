@@ -9,3 +9,6 @@ width = 80
 height = 80
 delay = 5 # in seconds
 file_path = "state/pixels.bin"
+
+[state]
+active = false

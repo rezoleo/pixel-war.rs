@@ -49,6 +49,7 @@ async fn main() {
         cookie_key: key,
         auth: config.auth,
         file_path: Arc::new(config.file.file_path.clone()),
+        active: Arc::new(Mutex::new(config.state.active)),
     };
 
     // Initialize the pixel file if it doesn't exist
@@ -65,9 +66,11 @@ async fn main() {
         .route("/api/pixels", get(get_all_pixels))
         .route("/api/pixels", post(get_pixel_region))
         .route("/api/delay", get(get_delay))
+        .route("/api/active", get(get_active))
         .route("/api/admin-login", post(admin_login))
         .route("/api/admin/pixels", post(admin_whitening))
         .route("/api/admin/size", post(update_canvas_size))
+        .route("/api/admin/active", post(update_admin_active))
         .route("/api/me", get(me))
         .fallback_service(ServeDir::new("static/").not_found_service(get(spa_fallback)))
         .with_state(shared_state);

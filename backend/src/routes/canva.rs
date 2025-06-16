@@ -18,3 +18,8 @@ pub async fn spa_fallback() -> axum::response::Html<String> {
         std::fs::read_to_string("static/index.html").unwrap_or_else(|_| "<h1>404</h1>".to_string());
     axum::response::Html(html)
 }
+
+pub async fn get_active(State(state): State<AppState>) -> Json<serde_json::Value> {
+    let active = state.active.lock().await;
+    Json(serde_json::json!({ "active": *active }))
+}

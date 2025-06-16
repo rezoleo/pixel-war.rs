@@ -47,8 +47,9 @@ pub struct AppState {
     pub canvas_size: Arc<Mutex<CanvasSize>>,
     pub file_lock: Arc<Mutex<()>>, // dummy mutex for synchronizing file access
     pub delay: u32,                // default delay value in seconds
-    pub ip_timestamps: Arc<Mutex<HashMap<String, SystemTime>>>, // new: track IP cooldown
+    pub ip_timestamps: Arc<Mutex<HashMap<String, SystemTime>>>, // track IP cooldown
     pub auth: AuthConfig,
     pub cookie_key: Key,
     pub file_path: Arc<String>,
+    pub active: Arc<Mutex<bool>>,
 }

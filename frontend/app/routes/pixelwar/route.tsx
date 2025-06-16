@@ -11,6 +11,7 @@ import BottomToolbar from "components/BottomToolbar";
 const SLIDER_STEP = 0.01;
 
 export default function Home() {
+  const [active, setActive] = useState<boolean>(true);
   const [selectedColor, setSelectedColor] = useState<Color>(colors[0]);
   const [sliderValue, setSliderValue] = useState<number | null>(null);
   const [minSliderValue, setMinSliderValue] = useState<number | null>(null);
@@ -45,6 +46,19 @@ export default function Home() {
     }
   };
 
+  const fetchActive = async () => {
+    try {
+      const res = await axios.get("/api/active");
+      if (typeof res.data?.active === "boolean") {
+        setActive(res.data.active);
+      } else {
+        console.error("❌ Invalid active status response format");
+      }
+    } catch (err) {
+      console.error("❌ Failed to fetch active status:", err);
+    }
+  };
+
   // Countdown effect
   useEffect(() => {
     if (countdown <= 0) return;
@@ -62,9 +76,11 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [countdown]);
 
-  // Initial fetch of pixel data and delay
+  // Initial fetch
   useEffect(() => {
-    Promise.all([fetchDelay(), fetchPixelData()]);
+    (async () => {
+      await Promise.all([fetchDelay(), fetchPixelData(), fetchActive()]);
+    })();
   }, []);
 
   const handleRefresh = async () => {
@@ -91,19 +107,19 @@ export default function Home() {
           setCountdown(delay);
         }
       } else {
-        // Non-200 status (rare with axios but just in case)
         alert(`Upload failed: ${response.data || "Unknown error"}`);
       }
     } catch (error: any) {
-      // Axios error or network error
       if (error.response) {
-        // The server responded with a status code outside 2xx
-        alert(`Error: ${error.response.data || "Request failed"}`);
+        if (error.response.status === 503) {
+          alert("Service is currently unavailable");
+          await fetchActive();
+        } else {
+          alert(`Error: ${error.response.data || "Request failed"}`);
+        }
       } else if (error.request) {
-        // Request was made but no response received
         alert("Network error: No response from server");
       } else {
-        // Other errors (setup, etc)
         alert(`Unexpected error: ${error.message}`);
       }
     }
@@ -143,10 +159,14 @@ export default function Home() {
       <div className="pt-5 px-3 container mx-auto dark:text-white text-lg">
         <div className="flex justify-center">
           <div className="inline-flex bg-neutral-600 py-1 px-2 rounded-lg">
-            {countdown > 0 ? (
-              <p className="pr-1 font-bold text-red-500">{`${countdown}s`}</p>
+            {active ? (
+              countdown > 0 ? (
+                <p className="pr-1 font-bold text-red-500">{`${countdown}s`}</p>
+              ) : (
+                <p className="pr-1 font-bold text-green-500">Ready</p>
+              )
             ) : (
-              <p className="pr-1 font-bold text-green-500">Ready</p>
+              <p className="pr-1 font-bold text-red-500">Pixel War finished</p>
             )}
             <p className="pr-3 font-bold">
               {pixelClicked ? `(${pixelClicked.x},${pixelClicked.y})` : "(?,?)"}
@@ -173,6 +193,7 @@ export default function Home() {
         onSliderChange={setSliderValue}
         onRefresh={handleRefresh}
         onUpload={handleUpload}
+        active={active}
       />
     </div>
   );

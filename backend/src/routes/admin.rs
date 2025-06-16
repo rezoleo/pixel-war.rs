@@ -98,3 +98,29 @@ pub async fn update_canvas_size(
         ),
     }
 }
+
+pub async fn update_admin_active(
+    State(state): State<AppState>,
+    jar: PrivateCookieJar,
+    Json(payload): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    if !is_user_admin(&jar) {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(json!({ "error": "Unauthorized" })),
+        );
+    }
+
+    let active = payload
+        .get("active")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+
+    let mut active_lock = state.active.lock().await;
+    *active_lock = active;
+
+    (
+        StatusCode::OK,
+        Json(json!({ "message": "State updated successfully" })),
+    )
+}

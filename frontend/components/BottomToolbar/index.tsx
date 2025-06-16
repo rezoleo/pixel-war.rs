@@ -13,6 +13,7 @@ interface BottomToolbarProps {
   onSliderChange: (value: number) => void;
   onRefresh: () => void;
   onUpload: () => void;
+  active: boolean;
 }
 
 const BottomToolbar: React.FC<BottomToolbarProps> = ({
@@ -25,6 +26,7 @@ const BottomToolbar: React.FC<BottomToolbarProps> = ({
   onSliderChange,
   onRefresh,
   onUpload,
+  active,
 }) => {
   return (
     <div className="fixed bottom-0 left-0 w-full py-2 z-50">
@@ -59,8 +61,10 @@ const BottomToolbar: React.FC<BottomToolbarProps> = ({
             Refresh
           </Button>
           <Button
-            onClick={onUpload}
-            className="sm:px-4 sm:py-2 text-sm sm:text-base"
+            onClick={active ? onUpload : () => {}}
+            className={`sm:px-4 sm:py-2 text-sm sm:text-base ${
+              !active && "hover:cursor-not-allowed! opacity-50"
+            }`}
           >
             Upload
           </Button>
