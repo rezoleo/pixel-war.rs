@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import AdminCanvaPart from "components/admin/adminCanva";
 import AdminNewSize from "components/admin/adminNewSize";
 import AdminChangeActive from "components/admin/adminChangeActive";
+import AdminResetCanva from "components/admin/adminResetCanva";
 
 export default function AdminControl() {
   const [pixelsData, setPixelsData] = useState<string | null>(null);
@@ -70,6 +71,7 @@ export default function AdminControl() {
       />
       <AdminNewSize canvasSize={canvasSize} />
       <AdminChangeActive active={active} setActive={setActive} />
+      <AdminResetCanva />
     </div>
   );
 }

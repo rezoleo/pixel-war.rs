@@ -71,6 +71,7 @@ async fn main() {
         .route("/api/admin/pixels", post(admin_whitening))
         .route("/api/admin/size", post(update_canvas_size))
         .route("/api/admin/active", post(update_admin_active))
+        .route("/api/admin/reset", post(admin_reset))
         .route("/api/me", get(me))
         .fallback_service(ServeDir::new("static/").not_found_service(get(spa_fallback)))
         .with_state(shared_state);

@@ -1,5 +1,5 @@
 use crate::routes::{
-    pixel::resize_canvas_locked,
+    pixel::{init_pixel_file, resize_canvas_locked},
     state::{AppState, CanvasSize},
 };
 use axum::{
@@ -12,6 +12,7 @@ use axum_extra::extract::cookie::{Cookie, PrivateCookieJar};
 use bcrypt::verify;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::fs;
 
 #[derive(Deserialize)]
 pub struct LoginForm {
@@ -45,7 +46,6 @@ pub async fn admin_login(
             ),
         )
     } else {
-        use axum::http::StatusCode;
         (
             jar,
             (
@@ -123,4 +123,56 @@ pub async fn update_admin_active(
         StatusCode::OK,
         Json(json!({ "message": "State updated successfully" })),
     )
+}
+
+pub async fn admin_reset(
+    State(state): State<AppState>,
+    jar: PrivateCookieJar,
+    Json(canvas_size): Json<CanvasSize>,
+) -> impl IntoResponse {
+    if !is_user_admin(&jar) {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(json!({ "error": "Unauthorized" })),
+        );
+    }
+
+    // Prepare file paths
+    let pixel_file_path = &*state.file_path;
+
+    // Get current date as YYYY-MM-DD without chrono
+    let now = std::time::SystemTime::now();
+    let datetime: time::OffsetDateTime = now.into();
+    let date_str = format!(
+        "{:04}-{:02}-{:02}",
+        datetime.year(),
+        datetime.month() as u8,
+        datetime.day()
+    );
+    let backup_path = format!("{}-{}", pixel_file_path, date_str);
+
+    // Try to copy the file before resetting
+    if let Err(e) = fs::copy(pixel_file_path, &backup_path) {
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({ "error": format!("Failed to backup canvas file: {}", e) })),
+        );
+    }
+
+    // Reset the canvas file
+    match init_pixel_file(pixel_file_path, &canvas_size) {
+        Ok(_) => {
+            // Reset the canvas size in the state
+            let mut canvas_size_lock = state.canvas_size.lock().await;
+            *canvas_size_lock = canvas_size;
+            (
+                StatusCode::OK,
+                Json(json!({ "message": "Canvas reset successfully" })),
+            )
+        }
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(json!({ "error": format!("Failed to reset canvas: {}", e) })),
+        ),
+    }
 }

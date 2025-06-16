@@ -171,6 +171,13 @@ pub async fn get_pixel_region(
 
 #[allow(dead_code)]
 pub fn init_pixel_file(path: &str, size: &CanvasSize) -> std::io::Result<()> {
+    if size.width % 2 != 0 || size.height % 2 != 0 {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "Width and height must be even numbers",
+        ));
+    }
+
     let byte_count = (size.width * size.height) / 2;
     let buffer = vec![0u8; byte_count as usize];
 
