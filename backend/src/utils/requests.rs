@@ -31,7 +31,8 @@ pub async fn is_request_allowed(ip: &str, state: &AppState) -> bool {
     match timestamps.get(ip) {
         Some(&last_time) => {
             if let Ok(elapsed) = now.duration_since(last_time) {
-                if elapsed >= Duration::from_secs(state.delay.into()) {
+                let delay = *state.delay.lock().await as u64;
+                if elapsed >= Duration::from_secs(delay) {
                     timestamps.insert(ip.to_string(), now);
                     true
                 } else {

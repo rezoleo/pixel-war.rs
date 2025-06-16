@@ -35,15 +35,15 @@ const AdminResetCanva = () => {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Canvas size updated successfully!");
+        alert("Canva resetted successfuly !");
         setWidth(null);
         setHeight(null);
       } else {
-        alert(`Error: ${data.error || "Failed to update canvas size."}`);
+        alert(`Error: ${data.error || "Failed to reset canvas."}`);
       }
     } catch (error) {
-      console.error("Error updating canvas size:", error);
-      alert("An error occurred while updating the canvas size.");
+      console.error("Error reseting canvas:", error);
+      alert("An error occurred while reseting the canvas.");
     }
   };
 

@@ -176,3 +176,34 @@ pub async fn admin_reset(
         ),
     }
 }
+
+pub async fn admin_update_delay(
+    State(state): State<AppState>,
+    jar: PrivateCookieJar,
+    Json(payload): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    if !is_user_admin(&jar) {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(json!({ "error": "Unauthorized" })),
+        );
+    }
+
+    let delay = match payload.get("delay").and_then(|v| v.as_u64()) {
+        Some(d) => d as u32,
+        None => {
+            return (
+                StatusCode::BAD_REQUEST,
+                Json(json!({ "error": "Missing or invalid 'delay' field" })),
+            );
+        }
+    };
+
+    let mut state_lock = state.delay.lock().await;
+    *state_lock = delay;
+
+    (
+        StatusCode::OK,
+        Json(json!({ "message": "Delay updated successfully" })),
+    )
+}

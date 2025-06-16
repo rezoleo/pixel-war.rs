@@ -7,6 +7,7 @@ import AdminCanvaPart from "components/admin/adminCanva";
 import AdminNewSize from "components/admin/adminNewSize";
 import AdminChangeActive from "components/admin/adminChangeActive";
 import AdminResetCanva from "components/admin/adminResetCanva";
+import AdminDelay from "components/admin/adminDelay";
 
 export default function AdminControl() {
   const [pixelsData, setPixelsData] = useState<string | null>(null);
@@ -72,6 +73,7 @@ export default function AdminControl() {
       <AdminNewSize canvasSize={canvasSize} />
       <AdminChangeActive active={active} setActive={setActive} />
       <AdminResetCanva />
+      <AdminDelay />
     </div>
   );
 }

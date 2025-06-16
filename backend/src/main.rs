@@ -44,7 +44,7 @@ async fn main() {
     let shared_state = AppState {
         canvas_size: Arc::clone(&canvas_size),
         file_lock: Arc::new(Mutex::new(())),
-        delay: config.file.delay,
+        delay: Arc::new(Mutex::new(config.file.delay)),
         ip_timestamps: Arc::new(Mutex::new(HashMap::new())),
         cookie_key: key,
         auth: config.auth,
@@ -72,6 +72,7 @@ async fn main() {
         .route("/api/admin/size", post(update_canvas_size))
         .route("/api/admin/active", post(update_admin_active))
         .route("/api/admin/reset", post(admin_reset))
+        .route("/api/admin/delay", post(admin_update_delay))
         .route("/api/me", get(me))
         .fallback_service(ServeDir::new("static/").not_found_service(get(spa_fallback)))
         .with_state(shared_state);

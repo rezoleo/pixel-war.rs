@@ -10,7 +10,8 @@ pub async fn get_canvas_size(State(state): State<AppState>) -> Json<CanvasSize> 
 }
 
 pub async fn get_delay(State(state): State<AppState>) -> Json<u32> {
-    Json(state.delay)
+    let delay = state.delay.lock().await;
+    Json(*delay)
 }
 
 pub async fn spa_fallback() -> axum::response::Html<String> {
