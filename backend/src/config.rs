@@ -21,6 +21,7 @@ pub struct FileConfig {
 #[derive(Debug, Deserialize, Clone)]
 pub struct StateConfig {
     pub active: bool,
+    pub address: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]

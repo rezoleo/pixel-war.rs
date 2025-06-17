@@ -19,6 +19,7 @@ frontend/node_modules/
 # React Router
 frontend/.react-router/
 frontend/build/
+frontend/public/downloads/automate_pixel.zip
 
 # debug
 frontend/.pnpm-debug.log*

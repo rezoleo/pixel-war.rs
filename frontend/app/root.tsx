@@ -26,7 +26,7 @@ export const links: Route.LinksFunction = () => [
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
+    { title: "Pixel War" },
     { name: "description", content: "Bienvenue dans la PixelWar!" },
   ];
 }

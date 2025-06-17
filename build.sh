@@ -10,7 +10,7 @@
 # Build the backend
 (
     cd backend
-    cargo build --release
+    cargo build --release --target x86_64-unknown-linux-musl
 )
 
 # Copy the frontend build to the backend static directory

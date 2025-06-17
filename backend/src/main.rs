@@ -16,8 +16,6 @@ use tokio::sync::Mutex;
 use tower_http::services::ServeDir;
 use tracing_subscriber;
 
-const ADDRESS: &str = "127.0.0.1:3000";
-
 impl FromRef<AppState> for Key {
     fn from_ref(app_state: &AppState) -> Key {
         app_state.cookie_key.clone()
@@ -77,11 +75,11 @@ async fn main() {
         .fallback_service(ServeDir::new("static/").not_found_service(get(spa_fallback)))
         .with_state(shared_state);
 
-    let listener = tokio::net::TcpListener::bind(ADDRESS)
+    let listener = tokio::net::TcpListener::bind(&config.state.address)
         .await
         .expect("Failed to bind address");
 
-    tracing::info!("Listening on http://{}", ADDRESS);
+    tracing::info!("Listening on http://{}", &config.state.address);
     axum::serve(
         listener,
         app.into_make_service_with_connect_info::<SocketAddr>(),

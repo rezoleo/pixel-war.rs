@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  rust:
+    image: alpine:latest
+    user: "1000"
+    userns_mode: "host"
+    restart: always
+    working_dir: /app
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.network=proxy"
+      - "traefik.port=3000"
+      - "traefik.frontend.rule=Host:pixelwar.rezoleo.fr"
+    volumes:
+      - "/home/rezoleo/pixel-war-v2/:/app"
+    command: ./target/backend
+
+networks:
+  proxy:
+    external: true
