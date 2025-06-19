@@ -34,6 +34,8 @@ interface CanvasPixelWarProps {
     x: number | null;
     y: number | null;
   };
+  readonly?: boolean; // Optional prop to indicate read-only mode
+  className?: string;
 }
 
 const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
@@ -47,6 +49,8 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
   setPixelStart,
   pixelStart,
   setPixelEnd,
+  className,
+  readonly = false, // Default to false if not provided
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -96,7 +100,7 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
   const handleMouseDown = (e: React.MouseEvent) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     const ctx = canvasRef.current?.getContext("2d");
-    if (!rect || !ctx) return;
+    if (!rect || !ctx || readonly) return;
 
     if (!admin) {
       setIsDragging(true);
@@ -151,7 +155,7 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
       }
     } else {
       if (!isInsideCanvas(e, rect)) return;
-      if (!setPixelStart) return;
+      if (!setPixelStart || readonly) return;
 
       setRefresh(!refresh);
       const x = (e.clientX - rect.left) / scale;
@@ -164,7 +168,7 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (admin || !isDragging || !dragStart.current) return;
+    if (admin || !isDragging || !dragStart.current || readonly) return;
 
     const newX = e.clientX - dragStart.current.x;
     const newY = e.clientY - dragStart.current.y;
@@ -192,7 +196,15 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
 
     const rect = canvasRef.current?.getBoundingClientRect();
     const ctx = canvasRef.current?.getContext("2d");
-    if (!rect || !ctx || !pixelStart || !setPixelStart || !setPixelEnd) return;
+    if (
+      !rect ||
+      !ctx ||
+      !pixelStart ||
+      !setPixelStart ||
+      !setPixelEnd ||
+      readonly
+    )
+      return;
     if (!isInsideCanvas(e, rect)) return;
 
     const x = Math.floor((e.clientX - rect.left) / (PIXEL_PER_UNIT * scale));
@@ -215,7 +227,9 @@ const CanvaPixelWar: React.FC<CanvasPixelWarProps> = ({
 
   return (
     <div
-      className="h-full overflow-hidden flex justify-center items-start mt-3"
+      className={`h-full overflow-hidden flex justify-center items-start ${
+        className || ""
+      }`}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}

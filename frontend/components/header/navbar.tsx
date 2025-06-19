@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import NavbarLinks from "./navbarLinks";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 
 const basicLinks = [
@@ -34,6 +34,12 @@ const Navbar: React.FC = () => {
         console.error("Error fetching user data:", error);
       });
   }, []);
+
+  const location = useLocation();
+
+  if (location.pathname === "/spectate") {
+    return null; // Hide navbar on spectate page
+  }
 
   return (
     <nav className="bg-linear-to-r px-3 from-rose-900 to-red-950 text-white shadow-md">

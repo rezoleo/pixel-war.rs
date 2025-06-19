@@ -182,6 +182,7 @@ export default function Home() {
         currentColor={selectedColor}
         setPixelClicked={setPixelClicked}
         pixelsData={pixelsData}
+        className="mt-3"
       />
       <BottomToolbar
         sliderValue={sliderValue}
