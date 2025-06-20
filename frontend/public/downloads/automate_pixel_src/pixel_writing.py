@@ -3,26 +3,34 @@ from PIL import Image
 import os
 import time
 
-def get_website_content(url):
+BASE_URL = 'https://pixelwar.rezoleo.fr'
+
+def get_json(url):
     response = requests.get(url)
     if response.status_code == 200:
-        return response.text
+        return response.json()
     else:
-        return 'Error: ' + str(response.status_code)
+        print(f"Error fetching {url}: {response.status_code}")
+        exit()
 
-pixel_war_active = get_website_content('https://pixelwar.rezoleo.fr/is_pixel_war_active.php')
-if pixel_war_active.lower() != 'true':
+# Check if pixel war is active
+pixel_war_active = get_json(f'{BASE_URL}/api/active')
+if not pixel_war_active.get("active", False):
     print("The pixel war is not active. Exiting.")
     exit()
-delay = int(get_website_content('https://pixelwar.rezoleo.fr/get_timer.php')) + 1
-canva_size = list(map(int, get_website_content('https://pixelwar.rezoleo.fr/readTaille.php').split(',')))
+
+# Get delay and canvas size
+delay = int(get_json(f'{BASE_URL}/api/delay')) + 0.1 # Adding a small buffer to the delay
+size_info = get_json(f'{BASE_URL}/api/size')
+canva_size = (size_info['width'], size_info['height'])
+
 current_directory = os.path.dirname(os.path.abspath(__file__))
 image_files = [f for f in os.listdir(current_directory) if f.endswith(('.png', '.jpg', 'PNG', 'JPG'))]
 if not image_files:
     print("No image found in the directory. Exiting.")
     exit()
 print(f"Processing with '{image_files[0]}', if this is not the right image, please remove the other images from the directory.")
-image = Image.open(image_files[0])
+image = Image.open(image_files[0]).convert('RGBA')
 
 # Convert PNG to JPG if necessary
 if image_files[0].lower().endswith('.png'):
@@ -71,10 +79,10 @@ image_size = (x_last - x_first + 1, y_last - y_first + 1)
 image = image.resize(image_size)
 
 colors = [
-    "#ffffff", "#e4e4e4", "#888888", "#222222",
-    "#ffa7d1", "#e50000", "#e59500", "#a06a42",
-    "#e5d900", "#94e044", "#02be01", "#00d3dd",
-    "#0083c7", "#0000ea", "#cd6eea", "#820080"
+    "#FFFFFF", "#E4E4E4", "#888888", "#222222",
+    "#FFA7D1", "#E50000", "#E59500", "#A06A42",
+    "#E5D900", "#94E044", "#02BE01", "#00D3DD",
+    "#0083C7", "#0000EA", "#CD6EEA", "#820080",
 ]
 
 def closest_color(rgb):
@@ -99,19 +107,19 @@ image.show(title="Resized "+image_files[0]+".PNG")
 input("If the result is as expected, press enter to continue. Otherwise, press ctrl+c to retry from 0.")
 
 nb_pixels_tot = len(image_pixel_colors)
-print(f"the total time taken for placing pixels is {(delay * nb_pixels_tot) // 60}min {(delay * nb_pixels_tot)%60}s")
+print(f"the total time taken for placing pixels is {(delay * nb_pixels_tot) // 60}min {round((delay * nb_pixels_tot)%60,0)}s")
 nb_pixels_put = 0
 for y in range(y_first, y_last+1):
     for x in range(x_first, x_last+1):
-        json_data = {
+        payload = {
             "x": y,
             "y": x,
             "color": image_pixel_colors[nb_pixels_put]
         }
-        response = requests.post('https://pixelwar.rezoleo.fr/write_pixel.php', json=json_data)
+        response = requests.post(f'{BASE_URL}/api/pixel', json=payload)
         if response.status_code == 200:
-            print(f"Successfully posted pixel at ({x}, {y}) with color {json_data['color']}")
+            print(f"Successfully posted pixel at ({x}, {y}) with color {payload['color']}")
         else:
-            print(f"Failed to post pixel at ({x}, {y}) with color {json_data['color']}. Status code: {response.status_code}")
+            print(f"Failed to post pixel at ({x}, {y}) with color {payload['color']}. Status code: {response.status_code}")
         nb_pixels_put += 1
         time.sleep(delay)
