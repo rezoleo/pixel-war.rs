@@ -18,7 +18,7 @@ pnpm install
 Start the development server with HMR:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Your application will be available at `http://localhost:5173`. It will the backend to be ran first in order for it to work.
