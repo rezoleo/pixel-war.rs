@@ -1,11 +1,24 @@
-# Pixel War frontend
+# 🎨 Pixel War Frontend
 
-The frontend of the pixel war project built with React Router and TailwindCSS.
+Modern and responsive frontend for the Pixel War collaborative canvas, built with **React Router 7** and **Tailwind CSS** for a smooth user experience.
 
-## Getting Started
+## 🛠️ Tech Stack
 
+- **React Router 7** - Modern React framework with file-based routing
+- **TypeScript** - Type-safe JavaScript development
+- **Tailwind CSS** - Utility-first CSS framework for rapid UI development
+- **Axios** - HTTP client for API communication
+- **Vite** - Fast build tool and development server
 
-### Installation
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js** (v18 or higher)
+- **pnpm** (recommended) or npm/yarn
+- **Backend server** 
+
+### 📋 Installation
 
 Install the dependencies:
 
@@ -13,7 +26,7 @@ Install the dependencies:
 pnpm install
 ```
 
-### Development
+### 🔧 Development
 
 Start the development server with HMR:
 
@@ -21,8 +34,29 @@ Start the development server with HMR:
 pnpm run dev
 ```
 
-Your application will be available at `http://localhost:5173`. It will the backend to be ran first in order for it to work.
+**Note**: Your backend server must be running before launching the frontend.
 
-### Building for Production
+### 🏭 Building for Production
 
-The application is statically exported in order to be served directly by the backend. To build the application use the `build.sh` file provided at the root of the whole project.
+The application is statically exported to be served directly by the backend. 
+
+**Option 1: Use the build script (recommended)**
+```bash
+# From the project root
+chmod +x build.sh
+./build.sh
+```
+
+**Option 2: Manual build**
+```bash
+pnpm run build
+```
+
+## 🎮 Features
+
+- **Interactive Canvas** - Click to place pixels with real-time updates
+- **Color Palette** - Choose from a variety of colors
+- **Responsive Design** - Works seamlessly on desktop and mobile
+- **Real-time Updates** - See other users' pixels appear instantly
+- **Rate Limiting Display** - Visual feedback for cooldown periods
+- **Admin Panel** - Administrative controls for canvas management

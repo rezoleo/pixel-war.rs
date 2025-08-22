@@ -13,5 +13,5 @@ file_path = "state/pixels.bin"
 [state]
 active = false
 # choose one
-address = "127.0.0.1:3000" # for derive
+address = "127.0.0.1:3000" # for dev
 address = "0.0.0.0:3000" # for prod
